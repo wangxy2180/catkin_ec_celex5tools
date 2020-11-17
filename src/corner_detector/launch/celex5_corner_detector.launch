@@ -1,0 +1,29 @@
+<launch>
+    <!--    copy from arc_star.launch -->
+    <arg name="rosbag_flag" default="0"/>
+    <arg name="rosbag_path" default=""/>
+
+    <!--    get event data from celex5 real time -->
+    <group if="$(eval arg('rosbag_flag')==0)">
+        <node name="get_event_vector" pkg="celex5_ros_toolss" type="celex5_ros_toolss_get_event_vector">
+        </node>
+    </group>
+
+    <!--    get event data from rosbag play bag.bag-->
+    <group if="$(eval arg('rosbag_flag')!=0)">
+        <node name="bagplayer" pkg="rosbag" type="play" args="$(arg rosbag_path)">
+        </node>
+    </group>
+
+    <!--    corner detector-->
+    <node name="detector" pkg="corner_detector" type="corner_detector_fast" output="screen">
+        <param name="feature_type" value="FAST"></param>
+        <remap from="/celex5/events" to="/celex5/events"/>
+        <remap from="/feature_events" to="/feature_events"/>
+    </node>
+
+<!--        my visualization-->
+    <node name="event_vector_show" pkg="celex5_ros_toolss" type="event_vector_show" output="screen">
+        <remap from="/input_events" to="/feature_events"/>
+    </node>
+</launch>
